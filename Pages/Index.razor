@@ -1,0 +1,56 @@
+﻿@page "/"
+@inject IJSRuntime JS
+<PageTitle>Index</PageTitle>
+<div class="panel panel-left">
+    <h3>
+        Left panel
+    </h3>
+    <div>
+        Text
+    </div>
+</div>
+@if (Board is null)
+{
+    <div class="board">     
+        <div class="row">      
+            <div class="cell">
+                    Loading
+            </div>
+        </div>
+    </div>
+} 
+else 
+{
+    <div class="board">
+        @for (var i = 0; i < Height; i++)
+        {        
+            <div class="row">            
+                @for (var j = 0; j < Width; j++)
+                {
+                    <div class="cell">
+                        @{
+                            var type = Board[j, i] switch
+                            {
+                                "#" => "mdi-wall",
+                                "@" => "mdi-human-male",
+                                _ => ""
+                            };
+                            if (type != "")
+                            {
+                                <span class="mdi @type"></span>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+<div class="panel panel-right">
+    <h3>
+        Right panel
+    </h3>
+    <div>
+        Text
+    </div>
+</div>
