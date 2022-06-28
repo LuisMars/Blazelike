@@ -14,7 +14,8 @@ jobs:
           dotnet-version: 6.0.301
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
-        run: dotnet publish --configuration Release --output build
+        run: pwd
+        # run: dotnet publish --configuration Release --output build
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
