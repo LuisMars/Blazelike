@@ -1,0 +1,28 @@
+﻿.holder.retro-mode {
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    font-family: 'Press Start 2P', monospace;
+    text-rendering: optimizeSpeed;
+    font-size: 2vmin;
+
+    .icon {
+        display: none;
+    }
+
+    .cell {
+        display: flex;
+        aspect-ratio: 1;
+        width: stretch;
+        justify-content: center;
+        align-items: center;
+
+        &:hover {
+            background-color: $nord1;
+        }
+
+        & .retro {
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+        }
+    }
+}

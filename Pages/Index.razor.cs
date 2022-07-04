@@ -7,9 +7,21 @@ public partial class Index : IDisposable
     private DotNetObjectReference<Index>? dotNetHelper;
     public string[,] Board { get; set; }
     public int Height { get; set; } = 11;
+    public string HolderClass { get; set; }
     public int Width { get; set; } = 11;
+    private List<string> Log { get; set; } = new();
     private Dictionary<(int X, int Y), string> Map { get; set; } = new();
     private (int X, int Y) PlayerPosition { get; set; } = (4, 4);
+
+    public void AddLog(string log)
+    {
+        Log.Insert(0, log);
+        var count = Log.Count;
+        if (count > 30)
+        {
+            Log.RemoveAt(count - 1);
+        }
+    }
 
     public void Dispose()
     {
@@ -17,31 +29,28 @@ public partial class Index : IDisposable
     }
 
     [JSInvokable]
-    public void Move(int key)
+    public void InvokeMove(int keyCode)
     {
-        //W = 87
-        //S = 83
-        //A = 65
-        //D = 68
+        var key = (char)keyCode;
         var x = 0;
         var y = 0;
         var isMovementPressed = false;
-        if (key == 87)
+        if (key == 'W')
         {
             y--;
             isMovementPressed = true;
         }
-        if (key == 83)
+        if (key == 'S')
         {
             y++;
             isMovementPressed = true;
         }
-        if (key == 65)
+        if (key == 'A')
         {
             x--;
             isMovementPressed = true;
         }
-        if (key == 68)
+        if (key == 'D')
         {
             x++;
             isMovementPressed = true;
@@ -50,6 +59,11 @@ public partial class Index : IDisposable
         {
             return;
         }
+        MoveBy(x, y);
+    }
+
+    public void MoveBy(int x, int y)
+    {
         Board[PlayerPosition.X, PlayerPosition.Y] = "";
         var nextX = PlayerPosition.X + x;
         var nextY = PlayerPosition.Y + y;
@@ -58,7 +72,29 @@ public partial class Index : IDisposable
             return;
         }
         PlayerPosition = new(nextX, nextY);
+        AddLog($"Moved to {nextX}, {nextY}");
         UpdateBoard();
+    }
+
+    public void MoveTo(int x, int y)
+    {
+        var amountX = x - PlayerPosition.X;
+        var amountY = y - PlayerPosition.Y;
+        if (amountX * amountX + amountY * amountY != 1)
+        {
+            return;
+        }
+        MoveBy(amountX, amountY);
+    }
+
+    public void ToggleRetroMode()
+    {
+        if (HolderClass is null)
+        {
+            HolderClass = "retro-mode";
+            return;
+        }
+        HolderClass = null;
     }
 
     public async Task TriggerDotNetInstanceMethod()
