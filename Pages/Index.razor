@@ -1,6 +1,14 @@
 ﻿@page "/"
 @inject IJSRuntime JS
 <PageTitle>Blazelike</PageTitle>
+@if (!Loadad)
+{
+    <div>
+        Loading
+    </div>
+    return;    
+}
+
 <div class="holder @HolderClass">
     <div class="panel panel-side panel-left">
         <div class="panel-side-top">
@@ -15,38 +23,26 @@
             </button>
         </div>
     </div>
+    
     <div class="panel panel-center">
         <div class="board">  
-            @if (Board is not null) 
-            {
-                @for (var i = 0; i < Height; i++)
-                {        
-                    @for (var j = 0; j < Width; j++)
-                    {
-                        var x = j;
-                        var y = i;
-                            
-                        <div class="cell" onclick="@(()=> MoveTo(x, y))">
-                            @{
-                                var type = Board[j, i] switch
-                                {
-                                    "#" => "wall",
-                                    "@" => "person",
-                                    _ => ""
-                                };
-                                if (type != "")
-                                {
-                                    <span class="icon @type"></span>
-                                }
-                                <span class="retro">@Board[j, i]</span>
-                            }
-                        </div>
-                    }
+            @for (var i = 0; i < Height; i++)
+            {        
+                @for (var j = 0; j < Width; j++)
+                {
+                    var x = j;
+                    var y = i;
+                    <div class="cell background-@(Board[x, y]?.BackgroundColor ?? 2)" onclick="@(()=> MoveTo(x, y))">                    
+                        <span class="icon @Board[x, y]?.Icon-@Board[x, y]?.Color"></span>
+                        <span class="retro color-@Board[x, y]?.Color">@Board[x, y]?.Character</span>
+                    </div>
                 }
             }
         </div>
     
     </div>
+    
+
     <div class="panel panel-side panel-right">
         <div class="side-panel-top">
             Log

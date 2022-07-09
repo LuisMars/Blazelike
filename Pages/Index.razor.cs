@@ -1,17 +1,34 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazelike.Game;
+using Microsoft.JSInterop;
 
 namespace Blazelike.Pages;
 
 public partial class Index : IDisposable
 {
     private DotNetObjectReference<Index>? dotNetHelper;
-    public string[,] Board { get; set; }
+
+    public Index()
+    {
+        Board = new Entity[Width, Height];
+        for (var i = 0; i < Width; i++)
+        {
+            Entities.Add(new Entity("Wall", i, 0, "wall", "#", false));
+            Entities.Add(new Entity("Wall", i, Height - 1, "wall", "#", false));
+            Entities.Add(new Entity("Wall", 0, i, "wall", "#", false));
+            Entities.Add(new Entity("Wall", Width - 1, i, "wall", "#", false));
+        }
+        Player = new Entity("You", Width / 2, Height / 2, "person", "@", false);
+        Entities.Add(Player);
+    }
+
+    public Entity?[,] Board { get; set; }
     public int Height { get; set; } = 11;
-    public string HolderClass { get; set; }
+    public string HolderClass { get; set; } = "";
+    public bool Loadad { get; private set; }
     public int Width { get; set; } = 11;
+    private List<Entity> Entities { get; set; } = new();
     private List<string> Log { get; set; } = new();
-    private Dictionary<(int X, int Y), string> Map { get; set; } = new();
-    private (int X, int Y) PlayerPosition { get; set; } = (4, 4);
+    private Entity Player { get; set; }
 
     public void AddLog(string log)
     {
@@ -21,6 +38,7 @@ public partial class Index : IDisposable
         {
             Log.RemoveAt(count - 1);
         }
+        UpdateBoard();
     }
 
     public void Dispose()
@@ -64,22 +82,27 @@ public partial class Index : IDisposable
 
     public void MoveBy(int x, int y)
     {
-        Board[PlayerPosition.X, PlayerPosition.Y] = "";
-        var nextX = PlayerPosition.X + x;
-        var nextY = PlayerPosition.Y + y;
+        var nextX = Player.Position.X + x;
+        var nextY = Player.Position.Y + y;
         if (nextX < 0 || nextX >= Width || nextY < 0 || nextY >= Height)
         {
             return;
         }
-        PlayerPosition = new(nextX, nextY);
-        AddLog($"Moved to {nextX}, {nextY}");
+        var foundSomething = Entities.FirstOrDefault(e => e.Position == (nextX, nextY) && !e.Walkable);
+        if (foundSomething is not null)
+        {
+            AddLog($"{Player.Name} can't move to {nextX}, {nextY}, because there is a {foundSomething.Name}");
+            return;
+        }
+        Player.SetPosition(nextX, nextY);
+        AddLog($"{Player.Name} moved to {nextX}, {nextY}");
         UpdateBoard();
     }
 
     public void MoveTo(int x, int y)
     {
-        var amountX = x - PlayerPosition.X;
-        var amountY = y - PlayerPosition.Y;
+        var amountX = x - Player.Position.X;
+        var amountY = y - Player.Position.Y;
         if (amountX * amountX + amountY * amountY != 1)
         {
             return;
@@ -89,12 +112,12 @@ public partial class Index : IDisposable
 
     public void ToggleRetroMode()
     {
-        if (HolderClass is null)
+        if (HolderClass is "")
         {
             HolderClass = "retro-mode";
             return;
         }
-        HolderClass = null;
+        HolderClass = "";
     }
 
     public async Task TriggerDotNetInstanceMethod()
@@ -105,14 +128,6 @@ public partial class Index : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Board = new string[Width, Height];
-        for (var i = 0; i < Width; i++)
-        {
-            Map[(i, 0)] = "#";
-            Map[(i, Height - 1)] = "#";
-            Map[(0, i)] = "#";
-            Map[(Width - 1, i)] = "#";
-        }
         UpdateBoard();
         await TriggerDotNetInstanceMethod();
     }
@@ -123,16 +138,15 @@ public partial class Index : IDisposable
         {
             for (var y = 0; y < Height; y++)
             {
-                Board[x, y] = "";
+                Board[x, y] = null;
             }
         }
-        foreach (var kv in Map)
+        foreach (var entity in Entities)
         {
-            var (x, y) = kv.Key;
-            Board[x, y] = kv.Value;
+            var (x, y) = entity.Position;
+            Board[x, y] = entity;
         }
-        Board[PlayerPosition.X, PlayerPosition.Y] = "@";
-
+        Loadad = true;
         StateHasChanged();
     }
 }
