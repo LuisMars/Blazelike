@@ -118,8 +118,13 @@ button {
 
 .board {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
     gap: 0.5em;
     padding: 0.5em;
     aspect-ratio: 1;
+}
+
+@for $size from 1 through 100 {
+    .board-#{$size} {
+        grid-template-columns: repeat($size, 1fr);
+    }
 }
