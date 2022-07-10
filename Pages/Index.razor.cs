@@ -1,4 +1,5 @@
 ﻿using Blazelike.Game;
+using Blazelike.Game.Maps;
 using Microsoft.JSInterop;
 
 namespace Blazelike.Pages;
@@ -9,37 +10,17 @@ public partial class Index : IDisposable
 
     public Index()
     {
-        Board = new Entity[Width, Height];
-        for (var i = 0; i < Width; i++)
-        {
-            Entities.Add(new Entity("Wall", i, 0, "wall", "#", false));
-            Entities.Add(new Entity("Wall", i, Height - 1, "wall", "#", false));
-            Entities.Add(new Entity("Wall", 0, i, "wall", "#", false));
-            Entities.Add(new Entity("Wall", Width - 1, i, "wall", "#", false));
-        }
-        Player = new Entity("You", Width / 2, Height / 2, "person", "@", false);
-        Entities.Add(Player);
     }
 
-    public Entity?[,] Board { get; set; }
-    public int Height { get; set; } = 11;
+    public Entity?[,] Board => World.CurrentMap.Board;
+    public int Height => World.Height;
     public string HolderClass { get; set; } = "";
     public bool Loadad { get; private set; }
-    public int Width { get; set; } = 11;
-    private List<Entity> Entities { get; set; } = new();
-    private List<string> Log { get; set; } = new();
-    private Entity Player { get; set; }
-
-    public void AddLog(string log)
-    {
-        Log.Insert(0, log);
-        var count = Log.Count;
-        if (count > 30)
-        {
-            Log.RemoveAt(count - 1);
-        }
-        UpdateBoard();
-    }
+    public List<string> Log => World.Log;
+    public int MapHeight => World.CurrentMap.Height;
+    public int MapWidth => World.CurrentMap.Width;
+    public int Width => World.Width;
+    private World World { get; set; } = new();
 
     public void Dispose()
     {
@@ -77,37 +58,31 @@ public partial class Index : IDisposable
         {
             return;
         }
-        MoveBy(x, y);
-    }
-
-    public void MoveBy(int x, int y)
-    {
-        var nextX = Player.Position.X + x;
-        var nextY = Player.Position.Y + y;
-        if (nextX < 0 || nextX >= Width || nextY < 0 || nextY >= Height)
-        {
-            return;
-        }
-        var foundSomething = Entities.FirstOrDefault(e => e.Position == (nextX, nextY) && !e.Walkable);
-        if (foundSomething is not null)
-        {
-            AddLog($"{Player.Name} can't move to {nextX}, {nextY}, because there is a {foundSomething.Name}");
-            return;
-        }
-        Player.SetPosition(nextX, nextY);
-        AddLog($"{Player.Name} moved to {nextX}, {nextY}");
-        UpdateBoard();
+        World.MoveBy(x, y);
+        StateHasChanged();
     }
 
     public void MoveTo(int x, int y)
     {
-        var amountX = x - Player.Position.X;
-        var amountY = y - Player.Position.Y;
+        var baseX = x - World.Player.Position.X;
+        var baseY = y - World.Player.Position.Y;
+        var amountX = Math.Sign(baseX);
+        var amountY = Math.Sign(baseY);
+        if (Math.Abs(baseX) > Math.Abs(baseY))
+        {
+            amountY = 0;
+        }
+        else
+        {
+            amountX = 0;
+        }
+
         if (amountX * amountX + amountY * amountY != 1)
         {
             return;
         }
-        MoveBy(amountX, amountY);
+        World.MoveBy(amountX, amountY);
+        StateHasChanged();
     }
 
     public void ToggleRetroMode()
@@ -134,18 +109,8 @@ public partial class Index : IDisposable
 
     private void UpdateBoard()
     {
-        for (var x = 0; x < Width; x++)
-        {
-            for (var y = 0; y < Height; y++)
-            {
-                Board[x, y] = null;
-            }
-        }
-        foreach (var entity in Entities)
-        {
-            var (x, y) = entity.Position;
-            Board[x, y] = entity;
-        }
+        World.Update();
+
         Loadad = true;
         StateHasChanged();
     }

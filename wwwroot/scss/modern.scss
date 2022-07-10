@@ -32,7 +32,8 @@
         }
 
         &:hover {
-            box-shadow: $button-shadow-hover
+            box-shadow: $button-shadow-hover;
+            transform: scale(1.1);
         }
     }
 
