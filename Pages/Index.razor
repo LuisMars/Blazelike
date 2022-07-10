@@ -12,10 +12,32 @@
 <div class="holder @HolderClass">
     <div class="panel panel-side panel-left">
         <div class="panel-side-top">
-            Left panel
+            Minimap
         </div>
         <div class="panel-side-center">
-            Text
+            <div class="board board-@Height">  
+                @for (var i = 0; i < Height; i++)
+                {        
+                    @for (var j = 0; j < Width; j++)
+                    {
+                        var x = j;
+                        var y = i;
+                        <div class="cell bakground-3">      
+                            @if (World.Maps.ContainsKey((x, y)) && World.Maps[(x, y)].Visited)
+                            {
+                                var current = World.CurrentMap.Position == (x, y);
+                                var color = current ? "4" : "3";
+                                <span class="retro color-@color">#</span>
+                                <span class="icon wall-@color"></span>
+                            } else
+                            {                                
+                                <span class="retro"></span>
+                                <span class="icon"></span>
+                            }
+                        </div>
+                    }
+                }
+            </div>
         </div>
         <div class="panel-side-bottom">
             <button onclick="@(()=> ToggleRetroMode())" >
@@ -25,10 +47,10 @@
     </div>
     
     <div class="panel panel-center">
-        <div class="board">  
-            @for (var i = 0; i < Height; i++)
+        <div class="board board-@MapHeight">  
+            @for (var i = 0; i < MapHeight; i++)
             {        
-                @for (var j = 0; j < Width; j++)
+                @for (var j = 0; j < MapWidth; j++)
                 {
                     var x = j;
                     var y = i;
