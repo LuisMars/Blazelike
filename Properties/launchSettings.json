@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:59563/",
+      "applicationUrl": "http://localhost:59563/blazelike/",
       "sslPort": 0
     }
   },
