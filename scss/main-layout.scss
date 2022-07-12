@@ -47,12 +47,10 @@ a {
 
 .holder {
     flex-grow: 1;
-    gap: 1.5em;
     font-size: 1em;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content 100% min-content;
-    grid-template-areas: "." "center" ".";
+    display: flex;
+    gap: 1.5em;
+    flex-direction: column;
 }
 
 @media (min-width: 576px) {
@@ -60,9 +58,10 @@ a {
 
 @media (min-width: 768px) {
     .holder {
+        display: grid;
         grid-auto-columns: 1fr;
-        grid-template-columns: 25% auto;
-        grid-template-rows: auto 50vw;
+        grid-template-columns: 2fr 3fr;
+        grid-template-rows: auto auto;
         grid-template-areas:
             ". center" ". center";
     }
