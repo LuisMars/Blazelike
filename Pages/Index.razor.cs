@@ -16,7 +16,7 @@ public partial class Index : IDisposable
     public int Height => World.Height;
     public string HolderClass { get; set; } = "";
     public bool Loadad { get; private set; }
-    public List<string> Log => World.Log;
+    public IReadOnlyList<string> Log => World.Log;
     public int MapHeight => World.CurrentMap.Height;
     public int MapWidth => World.CurrentMap.Width;
     public int Width => World.Width;
@@ -28,7 +28,7 @@ public partial class Index : IDisposable
     }
 
     [JSInvokable]
-    public void InvokeMove(int keyCode)
+    public async Task InvokeMove(int keyCode)
     {
         var key = (char)keyCode;
         var x = 0;
@@ -58,11 +58,10 @@ public partial class Index : IDisposable
         {
             return;
         }
-        World.MoveBy(x, y);
-        StateHasChanged();
+        await World.MoveByAsync(x, y);
     }
 
-    public void MoveTo(int x, int y)
+    public async Task MoveToAsync(int x, int y)
     {
         var baseX = x - World.Player.Position.X;
         var baseY = y - World.Player.Position.Y;
@@ -81,8 +80,7 @@ public partial class Index : IDisposable
         {
             return;
         }
-        World.MoveBy(amountX, amountY);
-        StateHasChanged();
+        await World.MoveByAsync(amountX, amountY);
     }
 
     public void ToggleRetroMode()
@@ -103,6 +101,7 @@ public partial class Index : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        World.Refresh = StateHasChanged;
         UpdateBoard();
         await TriggerDotNetInstanceMethod();
     }

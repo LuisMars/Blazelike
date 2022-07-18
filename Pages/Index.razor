@@ -22,11 +22,11 @@
                     {
                         var x = j;
                         var y = i;
-                        <div class="cell bakground-3">      
+                        <div class="cell background-2">      
                             @if (World.Maps.ContainsKey((x, y)) && World.Maps[(x, y)].Visited)
                             {
                                 var current = World.CurrentMap.Position == (x, y);
-                                var color = current ? "4" : "3";
+                                var color = current ? "7" : "4";
                                 <span class="retro color-@color">#</span>
                                 <span class="icon wall-@color"></span>
                             } else
@@ -53,10 +53,32 @@
                 @for (var j = 0; j < MapWidth; j++)
                 {
                     var x = j;
-                    var y = i;
-                    <div class="cell background-@(Board[x, y]?.BackgroundColor ?? 2)" onclick="@(()=> MoveTo(x, y))">                    
-                        <span class="icon @Board[x, y]?.Icon-@Board[x, y]?.Color"></span>
-                        <span class="retro color-@Board[x, y]?.Color">@Board[x, y]?.Character</span>
+                    var y = i;                    
+                    var icon = "";
+                    var color = "3";
+                    var retroChar = "&nbsp;";
+                    var background = 0;
+                    if (Board[x, y]?.Visible ?? true)
+                    {
+                        icon = $"{Board[x, y]?.Icon}";
+                        color = $"{Board[x, y]?.Color}";
+                        retroChar = Board[x, y]?.Character;
+                        background = Board[x, y]?.BackgroundColor ?? 3;
+                    }
+                    else if ((Board[x, y]?.WasVisible ?? true))
+                    {
+                        if (Board[x, y]?.VisibleInShadows ?? true)
+                        {
+                            icon = $"{Board[x, y]?.Icon}";
+                            retroChar = Board[x, y]?.Character;                           
+                        }
+                        color = "6";
+                        background = 1;
+                    }
+                        
+                    <div class="cell background-@background" onclick="@(()=> MoveToAsync(x, y))">  
+                            <span class="icon @icon-@color"></span>
+                            <span class="retro color-@color">@((MarkupString)retroChar)</span>
                     </div>
                 }
             }

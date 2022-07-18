@@ -8,18 +8,22 @@
 
     .panel {
         border-radius: 0.5em;
-        background-color: $nord1;
+        background-color: $color1;
         box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
 
         &-side {
             padding: 1em;
             font-size: 1.125em;
+
+            .board {
+                gap: 0.25vmin;
+            }
         }
     }
 
     .cell {
         box-shadow: $button-shadow;
-        transition: all 0.25s linear;
+        transition: all 0.125s linear;
         border-radius: 0.25em;
         padding: 10%;
 
@@ -40,14 +44,15 @@
     button {
         transition: all 0.25s linear;
         width: 100%;
-        background-color: $nord2;
+        color: $color6;
+        background-color: $color2;
         border-radius: 0.25em;
         padding: 0.25em 0.5em;
         box-shadow: $button-shadow;
 
         &:hover {
-            background-color: $nord3;
-            color: $nord5;
+            background-color: $color3;
+            color: $color7;
             box-shadow: $button-shadow-hover;
         }
     }

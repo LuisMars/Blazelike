@@ -1,4 +1,6 @@
-﻿.holder.retro-mode {
+﻿@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+.holder.retro-mode {
     @media (min-width: 768px) {
         grid-auto-columns: 1fr;
         grid-template-columns: 1fr 1fr;
@@ -9,25 +11,25 @@
 
     @media (min-width: 992px) {
         grid-template-rows: 1fr;
-        grid-template-columns: auto auto auto;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-template-areas: ". center .";
     }
 
     @media (min-width: 1400px) {
-        grid-template-columns: auto auto auto;
+        grid-template-columns: 1fr 2fr 1fr;
+        grid-template-areas: ". center .";
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-    font-family: 'Press Start 2P', monospace;
-    text-rendering: optimizeSpeed;
-    font-size: 2vmin;
+    font-family: 'VT323', monospace;
+    font-size: 4vmin;
+    line-height: 4vmin;
+    font-stretch: expanded;
 
     .icon {
         display: none;
     }
 
     .panel {
-        width: max-content;
         max-width: 40vw;
     }
 
@@ -36,6 +38,8 @@
         display: flex;
         max-width: 100%;
         align-items: center;
+        font-size: 8vmin;
+        line-height: 5vmin;
     }
 
     .board {
@@ -45,19 +49,18 @@
 
     .cell {
         display: flex;
-        aspect-ratio: 50/75;
         width: auto;
         justify-content: center;
         align-items: center;
+        transition: all 0.125s linear;
 
         &:hover {
-            background-color: $nord1;
+            background-color: $color1;
         }
 
         & .retro {
             justify-content: center;
             align-items: center;
-            font-size: 4vmin;
         }
     }
 }

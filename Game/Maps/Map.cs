@@ -1,21 +1,51 @@
-﻿namespace Blazelike.Game.Maps;
+﻿using Blazelike.Game.Services;
+
+namespace Blazelike.Game.Maps;
 
 public class Map
 {
-    private readonly Action<string> _log;
+    private readonly LoggerService _loggerService;
+    private readonly Random _random = new();
 
-    public Map(Action<string> log, (int X, int Y) position)
+    public Map(EntitySpawner entitySpawner, LoggerService loggerService, (int X, int Y) position)
     {
         Board = new Entity[Width, Height];
         for (var i = 0; i < Width; i++)
         {
-            Entities.Add(new Entity("Wall", i, 0, "wall", "#", false));
-            Entities.Add(new Entity("Wall", i, Height - 1, "wall", "#", false));
-            Entities.Add(new Entity("Wall", 0, i, "wall", "#", false));
-            Entities.Add(new Entity("Wall", Width - 1, i, "wall", "#", false));
+            Entities.Add(entitySpawner.CreateWall(this, i, 0));
+            Entities.Add(entitySpawner.CreateWall(this, i, Height - 1));
+            Entities.Add(entitySpawner.CreateWall(this, 0, i));
+            Entities.Add(entitySpawner.CreateWall(this, Width - 1, i));
         }
 
-        _log = log;
+        for (var i = 0; i < Width; i++)
+        {
+            for (var j = 0; j < Height; j++)
+            {
+                if (!Entities.Any(e => e.Position == (i, j)))
+                {
+                    Entities.Add(entitySpawner.CreateFloor(this, i, j));
+                }
+            }
+        }
+
+        Entities.Add(entitySpawner.CreateEnemy(this, Width / 2 + 1, Height / 2 + 1));
+
+        for (var i = 0; i < 10; i++)
+        {
+            var x = 0;
+            var y = 0;
+            do
+            {
+                x = _random.Next(2, Width - 2);
+                y = _random.Next(2, Width - 2);
+            }
+            while (Entities.Any(e => e.Position == (x, y) && !e.Walkable));
+
+            Entities.Add(entitySpawner.CreateWall(this, x, y));
+        }
+
+        _loggerService = loggerService;
         Position = position;
     }
 
@@ -66,7 +96,7 @@ public class Map
         }
         else
         {
-            _log($"Can't place door at {Position} - {other.Position}");
+            _loggerService.LogConsole($"Can't place door at {Position} - {other.Position}");
         }
     }
 }

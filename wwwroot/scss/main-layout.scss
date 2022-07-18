@@ -1,8 +1,8 @@
 ﻿html {
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
     font-family: 'Montserrat', sans-serif;
-    background-color: $nord0;
-    color: $nord4;
+    background-color: $color0;
+    color: $color7;
 }
 
 .loading {
@@ -17,7 +17,7 @@
 }
 
 a {
-    color: $nord8;
+    color: $color6;
 }
 
 @keyframes loading {
@@ -49,7 +49,7 @@ a {
     flex-grow: 1;
     font-size: 1em;
     display: flex;
-    gap: 1.5em;
+    gap: 0.5vmax;
     flex-direction: column;
 }
 
@@ -107,11 +107,11 @@ a {
 button {
     background-color: transparent;
     border: none;
-    color: $nord4;
+    color: $color6;
 
     &:hover {
-        background: $nord4;
-        color: $nord0;
+        background: $color7;
+        color: $color0;
     }
 }
 
