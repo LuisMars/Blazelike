@@ -1,6 +1,16 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+﻿@font-face {
+    font-family: 'ibm';
+    font-weight: 400;
+    font-style: normal;
+    src: url("../fonts/Web437_IBM_VGA_9x16.woff") format('woff2');
+}
 
 .holder.retro-mode {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
     @media (min-width: 768px) {
         grid-auto-columns: 1fr;
         grid-template-columns: 1fr 1fr;
@@ -20,11 +30,11 @@
         grid-template-areas: ". center .";
     }
 
-    font-family: 'VT323', monospace;
+    font-family: 'ibm', monospace;
     font-size: 4vmin;
-    line-height: 4vmin;
-    font-stretch: expanded;
+    line-height: 5vmin;
 
+    .modern,
     .icon {
         display: none;
     }
@@ -38,7 +48,12 @@
         display: flex;
         max-width: 100%;
         align-items: center;
-        font-size: 8vmin;
+        font-size: 10vmin;
+        line-height: 7vmin;
+    }
+
+    .game-over {
+        font-size: 4vmin;
         line-height: 5vmin;
     }
 
@@ -52,7 +67,7 @@
         width: auto;
         justify-content: center;
         align-items: center;
-        transition: all 0.125s linear;
+        transition: all 0.3s linear;
 
         &:hover {
             background-color: $color1;

@@ -23,16 +23,20 @@
 
     .cell {
         box-shadow: $button-shadow;
-        transition: all 0.125s linear;
+        transition: all 0.25s linear;
         border-radius: 0.25em;
         padding: 10%;
 
         & .icon {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: end;
+            align-items: end;
             font-size: clamp(1em, 4vw, 2em);
             aspect-ratio: 1;
+
+            & .tag {
+                width: 50%;
+            }
         }
 
         &:hover {
@@ -49,11 +53,34 @@
         border-radius: 0.25em;
         padding: 0.25em 0.5em;
         box-shadow: $button-shadow;
+        font-weight: bold;
 
         &:hover {
             background-color: $color3;
             color: $color7;
             box-shadow: $button-shadow-hover;
         }
+    }
+
+    .game-over-container {
+        width: 50%;
+    }
+
+    .bar {
+        &-holder {
+            box-shadow: $button-shadow;
+            width: 100%;
+            background: $color12;
+            border-radius: 0.25em;
+        }
+
+        background: $color13;
+        border-radius: 0.25em;
+        color: $color7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        min-width: max-content;
     }
 }

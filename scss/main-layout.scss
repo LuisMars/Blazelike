@@ -1,6 +1,6 @@
 ﻿html {
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
-    font-family: 'Montserrat', sans-serif;
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    font-family: 'Roboto', sans-serif;
     background-color: $color0;
     color: $color7;
 }
@@ -14,6 +14,12 @@
     font-size: 10em;
     color: #d8dee9;
     animation: loading 1s linear infinite;
+}
+
+@for $i from 1 through 12 {
+    .z-#{$i} {
+        z-index: $i;
+    }
 }
 
 a {
@@ -87,6 +93,16 @@ a {
 .panel {
     display: flex;
     flex-direction: column;
+
+    .game-over {
+        flex-grow: 1;
+        text-align: center;
+        padding: 2em;
+        display: flex;
+        gap: 2em;
+        flex-direction: column;
+        align-items: center;
+    }
 
     &-center {
         width: auto;
