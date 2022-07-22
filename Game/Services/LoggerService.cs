@@ -2,16 +2,16 @@
 
 public class LoggerService
 {
-    public List<string> Log { get; } = new();
+    public List<string> LogList { get; } = new();
 
-    public void AddLog(string message)
+    public void Log(string message)
     {
         Console.WriteLine(message);
-        Log.Insert(0, message);
-        var count = Log.Count;
+        LogList.Insert(0, message);
+        var count = LogList.Count;
         if (count > 30)
         {
-            Log.RemoveAt(count - 1);
+            LogList.RemoveAt(count - 1);
         }
     }
 

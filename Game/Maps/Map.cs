@@ -28,19 +28,21 @@ public class Map
                 }
             }
         }
-
-        Entities.Add(entitySpawner.CreateEnemy(this, Width / 2 + 1, Height / 2 + 1));
-
+        for (var i = 0; i < _random.Next(2, 5); i++)
+        {
+            var type = _random.Next(0, 3) switch
+            {
+                0 => EnemyType.Skeleton,
+                1 => EnemyType.Goblin,
+                2 => EnemyType.Troll,
+                _ => throw new NotImplementedException()
+            };
+            (var x, var y) = FindEmptySpot();
+            Entities.Add(entitySpawner.CreateEnemy(type, this, x, y));
+        }
         for (var i = 0; i < 10; i++)
         {
-            var x = 0;
-            var y = 0;
-            do
-            {
-                x = _random.Next(2, Width - 2);
-                y = _random.Next(2, Width - 2);
-            }
-            while (Entities.Any(e => e.Position == (x, y) && !e.Walkable));
+            (var x, var y) = FindEmptySpot();
 
             Entities.Add(entitySpawner.CreateWall(this, x, y));
         }
@@ -50,11 +52,29 @@ public class Map
     }
 
     public Entity?[,] Board { get; set; }
+
     public List<Entity> Entities { get; } = new();
+
     public int Height { get; set; } = 11;
+
     public (int X, int Y) Position { get; }
+
     public bool Visited { get; set; }
+
     public int Width { get; set; } = 11;
+
+    public (int x, int y) FindEmptySpot()
+    {
+        var x = 0;
+        var y = 0;
+        do
+        {
+            x = _random.Next(2, Width - 2);
+            y = _random.Next(2, Width - 2);
+        }
+        while (Entities.Any(e => e.Position == (x, y) && !e.Walkable));
+        return (x, y);
+    }
 
     internal void AddDoor(Map other)
     {
@@ -98,5 +118,10 @@ public class Map
         {
             _loggerService.LogConsole($"Can't place door at {Position} - {other.Position}");
         }
+    }
+
+    internal void Remove(Guid id)
+    {
+        Entities.RemoveAll(e => e.Id == id);
     }
 }

@@ -31,6 +31,7 @@ public abstract class DirectionalAction : IAction
         }
         OnAct();
         LogOnSuccess();
+        AfterAct();
         return true;
     }
 
@@ -40,6 +41,10 @@ public abstract class DirectionalAction : IAction
         NextY = Entity.Position.Y + y;
         HadFreeSpace = HasFreeSpace(false);
         return HadFreeSpace;
+    }
+
+    protected virtual void AfterAct()
+    {
     }
 
     protected abstract bool FindCondition(Entity e);
@@ -68,7 +73,9 @@ public abstract class DirectionalAction : IAction
         return NextX < 0 || NextX >= CurrentMap.Width || NextY < 0 || NextY >= CurrentMap.Height;
     }
 
-    protected abstract void LogOnNoFreeSpace(Entity foundSomething);
+    protected virtual void LogOnNoFreeSpace(Entity foundSomething)
+    {
+    }
 
     protected abstract void LogOnSuccess();
 

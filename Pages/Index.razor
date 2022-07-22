@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Globalization
 @inject IJSRuntime JS
 <PageTitle>Blazelike</PageTitle>
 @if (!Loadad)
@@ -12,7 +13,35 @@
 <div class="holder @HolderClass">
     <div class="panel panel-side panel-left">
         <div class="panel-side-top">
-            Minimap
+            @if (!World.GameOver)
+            {
+                <h4>
+                    Health
+                </h4>
+                <div class="bar-holder modern" >
+                    <div class="bar" style="width: @((100 * World.CurrentHealth.Value / World.CurrentHealth.MaxValue).ToString(CultureInfo.InvariantCulture))%">
+                        @World.CurrentHealth.Value / @World.CurrentHealth.MaxValue
+                    </div>
+                </div>
+                <div class="retro">
+                    @{
+                        var text = $"{World.CurrentHealth.Value}/{World.CurrentHealth.MaxValue}";
+                    }
+                    @for (var i = 0; i < World.CurrentHealth.MaxValue; i++)
+                    {
+                        var color = i < World.CurrentHealth.Value ? "13" : "11";
+                        <span class="background-@color">
+                            @if(i < text.Length)
+                            {
+                                @text[i]
+                            } else
+                            {
+                                @((MarkupString)"&nbsp;")
+                            }
+                        </span>
+                    }
+                </div>
+            }
         </div>
         <div class="panel-side-center">
             <div class="board board-@Height">  
@@ -26,13 +55,13 @@
                             @if (World.Maps.ContainsKey((x, y)) && World.Maps[(x, y)].Visited)
                             {
                                 var current = World.CurrentMap.Position == (x, y);
-                                var color = current ? "7" : "4";
-                                <span class="retro color-@color">#</span>
+                                var color = current ? "7" : "5";
                                 <span class="icon wall-@color"></span>
+                                <span class="retro color-@color">#</span>
                             } else
                             {                                
-                                <span class="retro"></span>
                                 <span class="icon"></span>
+                                <span class="retro">@((MarkupString)"&nbsp;")</span>
                             }
                         </div>
                     }
@@ -47,43 +76,67 @@
     </div>
     
     <div class="panel panel-center">
-        <div class="board board-@MapHeight">  
-            @for (var i = 0; i < MapHeight; i++)
-            {        
-                @for (var j = 0; j < MapWidth; j++)
-                {
-                    var x = j;
-                    var y = i;                    
-                    var icon = "";
-                    var color = "3";
-                    var retroChar = "&nbsp;";
-                    var background = 0;
-                    if (Board[x, y]?.Visible ?? true)
+        @if (!World.GameOver)
+        {
+            <div class="board board-@MapHeight">  
+                    @for (var i = 0; i < MapHeight; i++)
                     {
-                        icon = $"{Board[x, y]?.Icon}";
-                        color = $"{Board[x, y]?.Color}";
-                        retroChar = Board[x, y]?.Character;
-                        background = Board[x, y]?.BackgroundColor ?? 3;
-                    }
-                    else if ((Board[x, y]?.WasVisible ?? true))
-                    {
-                        if (Board[x, y]?.VisibleInShadows ?? true)
+                        @for (var j = 0; j < MapWidth; j++)
                         {
-                            icon = $"{Board[x, y]?.Icon}";
-                            retroChar = Board[x, y]?.Character;                           
+                            var x = j;
+                            var y = i;
+                            var icon = "";
+                            var color = "3";
+                            var retroChar = "&nbsp;";
+                            var background = 0;
+                            if (Board[x, y]?.IsVisible ?? true)
+                            {
+                                icon = $"{Board[x, y]?.Icon}";
+                                color = $"{Board[x, y]?.Color}";
+                                retroChar = Board[x, y]?.Character;
+                                background = Board[x, y]?.BackgroundColor ?? 3;
+                            }
+                            else if ((Board[x, y]?.WasVisible ?? true))
+                            {
+                                if (Board[x, y]?.VisibleInShadows ?? true)
+                                {
+                                    icon = $"{Board[x, y]?.Icon}";
+                                    retroChar = Board[x, y]?.Character;
+                                }
+                                color = "6";
+                                background = 1;
+                            }
+                            var isPlayerWaiting = false;
+                            if (World.IsRunning && (Board[x, y]?.IsPlayer ?? false))
+                            {
+                                isPlayerWaiting = true;
+                                color = "5";
+                            }
+                            <div class="cell background-@background z-@(11 - i)" onclick="@(()=> MoveToAsync(x, y))">  
+                                <span class="icon @icon-@color">
+                                    @if (isPlayerWaiting){
+                                        <span class="icon tag waiting-7" />
+                                    }
+                                </span>
+                                <span class="retro color-@color">@((MarkupString)retroChar)</span>
+                            </div>
                         }
-                        color = "6";
-                        background = 1;
                     }
-                        
-                    <div class="cell background-@background" onclick="@(()=> MoveToAsync(x, y))">  
-                            <span class="icon @icon-@color"></span>
-                            <span class="retro color-@color">@((MarkupString)retroChar)</span>
+                </div>
+            } 
+            else
+            {
+                <div class="game-over">
+                    <h1>
+                        Game over
+                    </h1>
+                    <div class="game-over-container">
+                        <button onclick="@(()=> PlayAgain())" >
+                            Play Again?
+                        </button>
                     </div>
-                }
-            }
-        </div>
-    
+                </div>
+            }    
     </div>
     
 

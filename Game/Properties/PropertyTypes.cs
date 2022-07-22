@@ -3,5 +3,6 @@
 public enum PropertyTypes
 {
     Agility,
-    Health
+    Health,
+    Attack
 }

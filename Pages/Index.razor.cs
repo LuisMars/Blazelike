@@ -63,24 +63,21 @@ public partial class Index : IDisposable
 
     public async Task MoveToAsync(int x, int y)
     {
-        var baseX = x - World.Player.Position.X;
-        var baseY = y - World.Player.Position.Y;
-        var amountX = Math.Sign(baseX);
-        var amountY = Math.Sign(baseY);
-        if (Math.Abs(baseX) > Math.Abs(baseY))
-        {
-            amountY = 0;
-        }
-        else
-        {
-            amountX = 0;
-        }
-
+        (var amountX, var amountY) = World.GetDirectionFromPlayer(x, y);
         if (amountX * amountX + amountY * amountY != 1)
         {
             return;
         }
         await World.MoveByAsync(amountX, amountY);
+    }
+
+    public void PlayAgain()
+    {
+        World = new World
+        {
+            Refresh = StateHasChanged
+        };
+        UpdateBoard();
     }
 
     public void ToggleRetroMode()

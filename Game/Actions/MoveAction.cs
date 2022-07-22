@@ -10,6 +10,8 @@ public class MoveAction : DirectionalAction
         FailIfFoundSomething = true;
     }
 
+    public bool MovedBewtweenMaps { get; private set; }
+
     protected override bool FindCondition(Entity e)
     {
         return !e.Walkable;
@@ -17,14 +19,14 @@ public class MoveAction : DirectionalAction
 
     protected override void LogOnNoFreeSpace(Entity entity)
     {
-        _loggerService.AddLog($"{Entity.Name} can't move to {CurrentMap.Position} ({NextX}, {NextY}), because there is a {entity.Name}");
+        _loggerService.Log($"{Entity.Name} can't move to {CurrentMap.Position} ({NextX}, {NextY}), because there is a {entity.Name}");
     }
 
     protected override void LogOnSuccess()
     {
-        if (Entity.IsPlayer)
+        if (Entity.IsPlayer && MovedBewtweenMaps)
         {
-            _loggerService.AddLog($"{Entity.Name} moved to {CurrentMap.Position} ({NextX}, {NextY})");
+            _loggerService.Log($"{Entity.Name} moved to {CurrentMap.Position}");
         }
     }
 
@@ -40,29 +42,34 @@ public class MoveAction : DirectionalAction
 
     private void MoveBetweenMaps()
     {
+        MovedBewtweenMaps = false;
         if (NextX == 0)
         {
             var nextMapPos = (CurrentMap.Position.X - 1, CurrentMap.Position.Y);
             MoveMaps(nextMapPos);
             NextX = CurrentMap.Width - 1;
+            MovedBewtweenMaps = true;
         }
         else if (NextY == 0)
         {
             var nextMapPos = (CurrentMap.Position.X, CurrentMap.Position.Y - 1);
             MoveMaps(nextMapPos);
             NextY = CurrentMap.Height - 1;
+            MovedBewtweenMaps = true;
         }
         else if (NextX == CurrentMap.Width - 1)
         {
             var nextMapPos = (CurrentMap.Position.X + 1, CurrentMap.Position.Y);
             MoveMaps(nextMapPos);
             NextX = 0;
+            MovedBewtweenMaps = true;
         }
         else if (NextY == CurrentMap.Height - 1)
         {
             var nextMapPos = (CurrentMap.Position.X, CurrentMap.Position.Y + 1);
             MoveMaps(nextMapPos);
             NextY = 0;
+            MovedBewtweenMaps = true;
         }
     }
 

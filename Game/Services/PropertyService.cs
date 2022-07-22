@@ -40,4 +40,9 @@ public class PropertyService
         }
         return propertyDict.ContainsKey(type);
     }
+
+    internal void Remove(Guid id)
+    {
+        _properties.Remove(id);
+    }
 }

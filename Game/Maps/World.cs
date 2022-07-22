@@ -1,4 +1,5 @@
 ﻿using Blazelike.Game.Extensions;
+using Blazelike.Game.Properties;
 using Blazelike.Game.Services;
 
 namespace Blazelike.Game.Maps;
@@ -21,22 +22,74 @@ public class World
         _entitySpawner = new EntitySpawner(this, _loggerService, _actionService, _propertyService, _turnService);
         InitializeMaps();
         CurrentMap = Maps.Values.First();
-        Player = _entitySpawner.CreatePlayer(CurrentMap, CurrentMap.Width / 2, CurrentMap.Height / 2);
+        (var x, var y) = CurrentMap.FindEmptySpot();
+        Player = _entitySpawner.CreatePlayer(CurrentMap, x, y);
 
         CurrentMap.Entities.Add(Player);
         CurrentMap.Visited = true;
     }
 
+    public Property<int> CurrentHealth
+    {
+        get
+        {
+            if (!_propertyService.TryGet<int>(Player.Id, PropertyTypes.Health, out var health))
+            {
+                return null;
+            }
+            return health;
+        }
+    }
+
     public Map CurrentMap { get; set; }
+
     public int CurrentTurn => _turnService.CurrentTurn;
-    public int DelayMs { get; set; } = 100;
+
+    public int DelayMs { get; set; } = 3000 / 60;
     public IEnumerable<string> EntityOrder => _turnService.Order.Where(x => x.Entity.Map == CurrentMap).Select(x => $"{x.Order}: {x.Entity.Name}");
+
+    public bool GameOver
+    {
+        get
+        {
+            return !_propertyService.Has(Player.Id, PropertyTypes.Health);
+        }
+    }
+
     public int Height { get; set; } = 10;
-    public IReadOnlyList<string> Log => _loggerService.Log;
+    public bool IsRunning { get; private set; }
+    public IReadOnlyList<string> Log => _loggerService.LogList;
+
     public Dictionary<(int X, int Y), Map> Maps { get; } = new();
+
     public Entity Player { get; set; }
+
     public Action Refresh { get; internal set; }
+
     public int Width { get; set; } = 10;
+
+    public (int X, int Y) GetDirectionFromPlayer(int x, int y)
+    {
+        var baseX = x - Player.Position.X;
+        var baseY = y - Player.Position.Y;
+        var amountX = Math.Sign(baseX);
+        var amountY = Math.Sign(baseY);
+        if (Math.Abs(baseX) > Math.Abs(baseY))
+        {
+            amountY = 0;
+        }
+        else
+        {
+            amountX = 0;
+        }
+        return (amountX, amountY);
+    }
+
+    public (int X, int Y) GetDirectionToPlayer((int X, int Y) position)
+    {
+        var (X, Y) = GetDirectionFromPlayer(position.X, position.Y);
+        return (-X, -Y);
+    }
 
     public Map MapAt((int x, int y) nextMapPos)
     {
@@ -45,15 +98,20 @@ public class World
 
     public async Task MoveByAsync(int x, int y)
     {
-        //await ActUntilIsPlayersTurnAsync();
-
+        if (IsRunning)
+        {
+            return;
+        }
+        IsRunning = true;
+        Refresh();
         _actionService.TryAct(Player.Id, x, y);
         _turnService.AdvanceTurn();
-
         Update();
         await Task.Delay(DelayMs);
-
         await ActUntilIsPlayersTurnAsync();
+        Update();
+        IsRunning = false;
+        Refresh();
     }
 
     public void SetCurrentMap((int x, int y) nextMapPos)
@@ -61,7 +119,7 @@ public class World
         CurrentMap = Maps[nextMapPos];
     }
 
-    public void Update()
+    public void Update(bool updateVisibility = true)
     {
         for (var x = 0; x < CurrentMap.Width; x++)
         {
@@ -72,11 +130,26 @@ public class World
         }
         foreach (var entity in CurrentMap.Entities)
         {
+            if (!entity.IsVisible && entity.WasVisible && !entity.VisibleInShadows)
+            {
+                continue;
+            }
             var (x, y) = entity.Position;
             CurrentMap.Board[x, y] = entity;
         }
-        UpdateVisibility();
+        if (updateVisibility)
+        {
+            UpdateVisibility();
+        }
         Refresh();
+    }
+
+    internal void RemoveEntity(Entity entity)
+    {
+        _actionService.Remove(entity.Id);
+        _propertyService.Remove(entity.Id);
+        _turnService.Remove(entity.Id);
+        Maps.Values.ToList().ForEach(m => m.Remove(entity.Id));
     }
 
     private async Task ActUntilIsPlayersTurnAsync()
@@ -84,29 +157,36 @@ public class World
         _turnService.TryGetCurrentEntity(out var nextEntity);
         while (nextEntity != Player)
         {
-            if (nextEntity is not null)
+            if (nextEntity is not null && nextEntity.Map.Position.DistanceSquared(Player.Map.Position) <= 1)
             {
-                var dir = _random.Next(0, 4);
-                (var x, var y) = dir switch
+                var dir = GetRandomDirection();
+                if (_random.NextDouble() < 0.75)
                 {
-                    0 => (-1, 0),
-                    1 => (1, 0),
-                    2 => (0, 1),
-                    3 => (0, -1),
-                    _ => throw new NotImplementedException(),
-                };
-                _actionService.TryAct(nextEntity.Id, x, y);
-                if (nextEntity.Map == Player.Map)
+                    dir = GetDirectionToPlayer(nextEntity.Position);
+                }
+                _actionService.TryAct(nextEntity.Id, dir.X, dir.Y);
+                if (nextEntity.Map == Player.Map && nextEntity.IsVisible)
                 {
-                    Update();
+                    Update(false);
                     await Task.Delay(DelayMs);
                 }
             }
             _turnService.AdvanceTurn();
             _turnService.TryGetCurrentEntity(out nextEntity);
         }
+    }
 
-        Update();
+    private (int X, int Y) GetRandomDirection()
+    {
+        var dir = _random.Next(0, 4);
+        return dir switch
+        {
+            0 => (-1, 0),
+            1 => (1, 0),
+            2 => (0, 1),
+            3 => (0, -1),
+            _ => throw new NotImplementedException(),
+        };
     }
 
     private void InitializeMaps()
@@ -168,7 +248,7 @@ public class World
         {
             if (entity == Player)
             {
-                Player.Visible = true;
+                Player.IsVisible = true;
                 Player.WasVisible = true;
                 continue;
             }
@@ -177,13 +257,8 @@ public class World
             var start = (Player.Position.X + 0.5, Player.Position.Y + 0.5);
             var end = (entity.Position.X + 0.5, entity.Position.Y + 0.5);
 
-            foreach (var other in CurrentMap.Entities)
+            foreach (var other in CurrentMap.Entities.Where(x => x != Player && x != entity && !x.Translucent && !(x.Position == Player.Position)))
             {
-                if (other == Player || other == entity || other.Translucent || other.Position == Player.Position)
-                {
-                    continue;
-                }
-
                 var left = Geom.Intersects(start, end,
                     (other.Position.X + 0.0, other.Position.Y + 0.5),
                     (other.Position.X + 0.5, other.Position.Y + 0.0), out _);
@@ -218,7 +293,7 @@ public class World
                 }
             }
 
-            entity.Visible = visible;
+            entity.IsVisible = visible;
             if (visible)
             {
                 entity.WasVisible = true;

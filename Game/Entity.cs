@@ -25,7 +25,7 @@ public class Entity
     public string Name { get; }
     public (int X, int Y) Position { get; internal set; }
     public bool Translucent { get; private set; }
-    public bool Visible { get; set; }
+    public bool IsVisible { get; set; }
     public bool VisibleInShadows { get; internal set; } = true;
     public bool Walkable { get; private set; }
     public bool WasVisible { get; set; }

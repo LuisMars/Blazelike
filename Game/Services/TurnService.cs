@@ -51,6 +51,11 @@ public class TurnService
         return TryGetCurrentEntity(out _, out entity);
     }
 
+    internal void Remove(Guid id)
+    {
+        SortedQueue.RemoveAll(x => x.Entity.Id == id);
+    }
+
     private void Insert(Entity entity, int agility)
     {
         SortedQueue.Add((CurrentTurn + (MaxAgility - agility), entity));
